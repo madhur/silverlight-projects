@@ -1,0 +1,41 @@
+<xml xmlns:s='uuid:BDC6E3F0-6DA3-11d1-A2A3-00AA00C14882'
+     xmlns:dt='uuid:C2F41010-65B3-11d1-A29F-00AA00C14882'
+     xmlns:rs='urn:schemas-microsoft-com:rowset'
+     xmlns:z='#RowsetSchema'>
+  <s:Schema id='RowsetSchema'>
+    <s:ElementType name='row' content='eltOnly' rs:CommandTimeout='30'>
+      <s:AttributeType name='ows_Attachments' rs:name='Attachments' rs:number='1'>
+        <s:datatype dt:type='boolean' dt:maxLength='1' />
+      </s:AttributeType>
+      <s:AttributeType name='ows_LinkTitle' rs:name='Title' rs:number='2'>
+        <s:datatype dt:type='string' dt:maxLength='512' />
+      </s:AttributeType>
+      <s:AttributeType name='ows_ManagerID' rs:name='ManagerID' rs:number='3'>
+        <s:datatype dt:type='string' dt:maxLength='512' />
+      </s:AttributeType>
+      <s:AttributeType name='ows_PersonID' rs:name='PersonID' rs:number='4'>
+        <s:datatype dt:type='string' dt:maxLength='512' />
+      </s:AttributeType>
+      <s:AttributeType name='ows_Field1' rs:name='Field1' rs:number='5'>
+        <s:datatype dt:type='string' dt:maxLength='512' />
+      </s:AttributeType>
+      <s:AttributeType name='ows_Field2' rs:name='Field2' rs:number='6'>
+        <s:datatype dt:type='string' dt:maxLength='512' />
+      </s:AttributeType>
+      <s:AttributeType name='ows_Field3' rs:name='Field3' rs:number='7'>
+        <s:datatype dt:type='string' dt:maxLength='512' />
+      </s:AttributeType>
+      <s:AttributeType name='ows_Field4' rs:name='Field4' rs:number='8'>
+        <s:datatype dt:type='string' dt:maxLength='512' />
+      </s:AttributeType>
+      <s:AttributeType name='ows_Field5' rs:name='Field5' rs:number='9'>
+        <s:datatype dt:type='string' dt:maxLength='512' />
+      </s:AttributeType>
+    </s:ElementType>
+  </s:Schema>
+  <rs:data>
+    <z:row ows_Attachments='0' ows_LinkTitle='Christine Maloney' ows_ManagerID='0' ows_PersonID='1' ows_Field1='Director' ows_Field2='GBST Governance, Investment' ows_Field3='&amp; Portfolio Management' ows_Field4='Phoenix' />
+    <z:row ows_Attachments='0' ows_LinkTitle='FTE Resources' ows_ManagerID='1' ows_PersonID='2' ows_Field1='Corina Mendenhall, Program Manager' ows_Field2='Michelle Buxbaum, Portfolio Manager' ows_Field3='Phoenix' />
+    <z:row ows_Attachments='0' ows_LinkTitle='Variable Resources' ows_ManagerID='1' ows_PersonID='3' ows_Field1='George W Karaparambil, PM' ows_Field2='Shuba Mahesh PM' ows_Field3='Kshama B Naik, PM' ows_Field4='Yash Amble, BSA' ows_Dotted='1' />
+  </rs:data>
+</xml>
