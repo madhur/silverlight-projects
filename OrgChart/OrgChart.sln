@@ -7,13 +7,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrgChart.Web", "OrgChart.We
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 2
+		SccNumberOfProjects = 3
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs05
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = OrgChart.Web\\OrgChart.Web.csproj
 		SccProjectName1 = OrgChart.Web
 		SccLocalPath1 = OrgChart.Web
+		SccProjectUniqueName2 = OrgChart\\OrgChart.csproj
+		SccProjectName2 = OrgChart
+		SccLocalPath2 = OrgChart
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
