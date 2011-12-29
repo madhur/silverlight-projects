@@ -35,8 +35,10 @@ namespace OrgChart
         public double drawingScale = 1;
         private string m_dataUrl;
         private XDocument m_xdoc;
+        public Person CurrentRoot;
+        private string CurrentRootStr;
 
-        public MainPage(string listGuid)
+        public MainPage(string listGuid, string currentRoot)
         {
             InitializeComponent();
             MyScoller.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible;
@@ -44,21 +46,24 @@ namespace OrgChart
             if (string.IsNullOrEmpty(listGuid))
                throw new ArgumentNullException("listGuid");
 
+            if(!string.IsNullOrEmpty(currentRoot))
+                CurrentRootStr=currentRoot;
+
           string baseUrl = string.Concat(HtmlPage.Document.DocumentUri.Scheme, "://", HtmlPage.Document.DocumentUri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped));  
           Guid lg = new Guid(listGuid);
 
-          if (App.Current.Host.InitParams.Count>1)
+          if (App.Current.Host.InitParams.ContainsKey("MS.SP.url"))
           {
               baseUrl = HttpUtility.UrlDecode(App.Current.Host.InitParams["MS.SP.url"]);
+              Debug.WriteLine(baseUrl);
           }
 
          
           // e.g. 
           m_dataUrl = string.Concat(baseUrl, "/_vti_bin/owssvr.dll?Cmd=Display&List=", HttpUtility.UrlEncode(lg.ToString()), "&XMLDATA=TRUE");
-          Debug.WriteLine(m_dataUrl);
+           Debug.WriteLine(m_dataUrl);
            InitializeComponent();
 
-          // LoadXMLFile();
            Loaded += new RoutedEventHandler(Page_Loaded);
         }
 
@@ -74,7 +79,6 @@ namespace OrgChart
           WebClient svc = new WebClient();
           svc.DownloadStringCompleted += new DownloadStringCompletedEventHandler(XmlDownloadStringCompleted);
           svc.DownloadStringAsync(new Uri(m_dataUrl, UriKind.Absolute));
-          Debug.WriteLine(m_dataUrl);
       }
 
         /// <summary>
@@ -86,11 +90,12 @@ namespace OrgChart
        {
            // e.result contains Xml string
            m_xdoc = XDocument.Load("madhur.xml");
-          // m_xdoc = XDocument.Load("OrgChart_Data.xml");
-        //  m_xdoc = XDocument.Parse(e.Result);
+          // m_xdoc = XDocument.Load("owssvr.xml");
+           //m_xdoc = XDocument.Parse(e.Result);
           Debug.WriteLine(m_xdoc);
           InitializeGrid();
-         //  XMLFileLoaded(m_xdoc);
+
+         
       }
 
 
@@ -99,23 +104,16 @@ namespace OrgChart
         /// </summary>
        private void InitializeGrid()
        {
-         //  Person firstNode = Person.GetPerson("OrgChartRootNode", "My Organization", "", "", "", "", "");
-        //   firstNode.MinChildWidth = totalWidth;
-        //   persons.Add(firstNode);
-
-         
 
             // The Task object is a simple data class to roll yourself with the properties you need
             XNamespace z = "#RowsetSchema";
             var Result = from row in m_xdoc.Descendants(z + "row")
                select new Person
                {
-                   ID = row.Attribute("ows_PersonID") != null ? row.Attribute("ows_PersonID").Value : null,
+                   
                    Name = row.Attribute("ows_LinkTitle") != null ? row.Attribute("ows_LinkTitle").Value : null,
-                   ManagerID = row.Attribute("ows_ManagerID") != null ? row.Attribute("ows_ManagerID").Value : null,
-                   //Department = row.Attribute("ows_Department") != null ? row.Attribute("ows_Department").Value : null,
-                   //Extension = row.Attribute("ows_Extension") != null ? row.Attribute("ows_Extension").Value : null,
-                   //Email = row.Attribute("ows_Email") != null ? row.Attribute("ows_Email").Value : null,
+                   ID = row.Attribute("ows_LinkTitle") != null ? row.Attribute("ows_LinkTitle").Value : null,
+                   Manager = row.Attribute("ows_Manager") != null ? row.Attribute("ows_Manager").Value : null,
                    Field1 = row.Attribute("ows_Field1") != null ? row.Attribute("ows_Field1").Value : null,
                    Field2 = row.Attribute("ows_Field2") != null ? row.Attribute("ows_Field2").Value : null,
                    Field3 = row.Attribute("ows_Field3") != null ? row.Attribute("ows_Field3").Value : null,
@@ -131,17 +129,19 @@ namespace OrgChart
             for (int i = 0; i < nodes.Length; i++)
             {
                // Debug.WriteLine(nodes[i].Data);
-                if (string.IsNullOrEmpty(nodes[i].ManagerID))
+                if (string.IsNullOrEmpty(nodes[i].Manager))
                 {
-                    nodes[i].ManagerID = "1";
+                    nodes[i].Manager = "1";
                 }
-                if (nodes[i].ManagerID == "0")
+                if (nodes[i].Manager == "0")
                 {
-                    nodes[i].ManagerID = "";
+                    nodes[i].Manager = "";
                 }
                
             }
             persons.AddRange(nodes);
+
+            SetCurrentRootFromInit();
             Rescale();
           // myDataGrid.ItemsSource = myData;
         }
@@ -161,69 +161,54 @@ namespace OrgChart
             Refresh();
         }
 
-        private void Refresh()
+        public void Refresh()
         {
+            if (CurrentRoot == null)
+            {
+
+                Refresh(persons[0]);
+            }
+            else
+            {
+                Refresh(CurrentRoot) ;
+            }
+
+        }
+
+        private void SetCurrentRootFromInit()
+        {
+            if (!string.IsNullOrEmpty(CurrentRootStr))
+            {
+                CurrentRoot = persons.First(s => CurrentRootStr == s.ID);
+               
+            }
+
+        }
+
+        public void Refresh(Person employeePerson)
+        {
+            
+            MyCanvas.Children.Clear();
+
             MyCanvas.Width = buttonWidth;
             MyCanvas.Height = buttonHeight;
             totalWidth = MyCanvas.Width;
             totalHight = MyCanvas.Height;
-            persons[0].MinChildWidth = buttonWidth + minHorizontalSpace;
-            persons[0].StartX = 0;
-            persons[0].X = persons[0].MinChildWidth / 2;
-            SetLevel(persons[0], 1);
-            CalculateWidth(persons[0]);
-            CalculateX(persons[0]);
-            DrawNode(persons[0]);
+            employeePerson.MinChildWidth = buttonWidth + minHorizontalSpace;
+            employeePerson.StartX = 0;
+            employeePerson.X = employeePerson.MinChildWidth / 2;
+            SetLevel(employeePerson, 1);
+            CalculateWidth(employeePerson);
+            CalculateX(employeePerson);
+            DrawNode(employeePerson);
         }
 
-        #region Load XML
-        //private void LoadXMLFile()
-        //{
-        //    WebClient xmlClient = new WebClient();
-        //    xmlClient.DownloadStringCompleted += new DownloadStringCompletedEventHandler(XMLFileLoaded);
-        //    xmlClient.DownloadStringAsync(new Uri("OrgChart_Data.xml", UriKind.RelativeOrAbsolute));
-        //}
-
-        void XMLFileLoaded(XDocument lobjDocument)
-        {
-           
-                Person firstNode = Person.GetPerson("OrgChartRootNode", "My Organization", "", "", "", "", "");
-                firstNode.MinChildWidth = totalWidth;
-                persons.Add(firstNode);
-
-             //   XElement lobjDocument = XElement.Parse(e.Result.ToString());
-
-                var Result = from view1 in lobjDocument.Descendants("Person")
-                             select new Person
-                             {
-                                 Name = (string)view1.Element("Name"),
-                                 ID = (string)view1.Element("ID"),
-                                 ManagerID = (string)view1.Element("ManagerID"),
-                                 Title = (string)view1.Element("Title"),
-                                 Department = (string)view1.Element("Department"),
-                                 Extension = (string)view1.Element("Extension"),
-                                 Email = (string)view1.Element("Email")
-                             };
-
-                Person[] nodes = Result.ToArray();
-
-                for (int i = 0; i < nodes.Length; i++)
-                {
-                   // Debug.WriteLine(nodes[i].Data);
-                    if (string.IsNullOrEmpty(nodes[i].ManagerID))
-                    {
-                        nodes[i].ManagerID = "OrgChartRootNode";
-                    }
-                }
-                persons.AddRange(nodes);
-                Rescale();
-            
-        }
-        #endregion
+      
 
         #region Calculate Values
-        private void SetLevel(Person parent, int level)
+        public void SetLevel(Person parent, int level)
         {
+            Debug.WriteLine(parent.Name + "-" + level);
             // Set the node level
             parent.Level = level;
 
@@ -236,7 +221,7 @@ namespace OrgChart
 
             // Select the closed items under this parent
             var resultN = from n in persons
-                          where n.ManagerID == parent.ID && n.Opened == false
+                          where n.Manager == parent.Name && n.Opened == false
                           select n;
 
             // Get the closed nodes number
@@ -244,7 +229,7 @@ namespace OrgChart
 
             // Select the opend nodes under this parent
             var result = from n in persons
-                         where n.ManagerID == parent.ID && n.Opened == true
+                         where n.Manager == parent.Name && n.Opened == true
                          select n;
 
             Person[] nodes = result.ToArray();
@@ -266,7 +251,7 @@ namespace OrgChart
             if (parent.SubNodes > 0)
             {
                 var result = from n in persons
-                             where n.ManagerID == parent.ID && n.Opened == true
+                             where n.Manager == parent.Name && n.Opened == true
                              orderby n.NodeOrder
                              select n;
 
@@ -299,7 +284,7 @@ namespace OrgChart
             if (parent.SubNodes > 0)
             {
                 var result = from n in persons
-                             where n.ManagerID == parent.ID && n.Opened == true
+                             where n.Manager == parent.Name && n.Opened == true
                              orderby n.NodeOrder
                              select n;
 
@@ -329,33 +314,61 @@ namespace OrgChart
         #endregion
 
         #region Draw
+
         private void DrawNode(Person parent)
         {
-            // Check if the current node is the parent node or not
-            if (parent.ManagerID == "")
+            DrawNode(parent, false);
+        }
+
+        private void DrawNode(Person parent, bool subset)
+        {
+            if (CurrentRoot == null)
+            {
+                // Check if the current node is the parent node or not
+                if (string.IsNullOrEmpty(parent.Manager))
+                {
+                    AddBox(MyCanvas, parent.X, parent.Level * levelHight, null, parent.ID, parent.Name, parent.Title, parent.Department, parent.Extension, false, true, parent.HiddenSubNodes > 0, parent.Field1, parent.Field2, parent.Field3, parent.Field4, parent.Field5, parent.dotted);
+                }
+            }
+            else if(!subset)
             {
                 AddBox(MyCanvas, parent.X, parent.Level * levelHight, null, parent.ID, parent.Name, parent.Title, parent.Department, parent.Extension, false, true, parent.HiddenSubNodes > 0, parent.Field1, parent.Field2, parent.Field3, parent.Field4, parent.Field5, parent.dotted);
             }
 
             // Get the child nodes
             var results = from n in persons
-                          where n.ManagerID == parent.ID && n.Opened == true
+                          where n.Manager == parent.Name && n.Opened == true
                           select n;
 
             foreach (Person p in results)
             {
                 AddBox(MyCanvas, p.X, p.Level * levelHight, parent.X, p.ID, p.Name, p.Title, p.Department, p.Extension, true, p.SubNodes > 0, p.HiddenSubNodes > 0, p.Field1, p.Field2, p.Field3, p.Field4, p.Field5, p.dotted);
-                DrawNode(p);
+                DrawNode(p,true);
             }
         }
         
         public void DrawLine(Canvas canvas, double x1, double y1, double x2, double y2)
+        {
+            DrawLine( canvas,  x1,  y1,  x2,  y2, false);
+        }
+
+        public void DrawLine(Canvas canvas, double x1, double y1, double x2, double y2, bool dotted)
         {
             Line line = new Line();
             line.X1 = x1;
             line.Y1 = y1;
             line.X2 = x2;
             line.Y2 = y2;
+
+            if (dotted)
+            {
+
+                DoubleCollection db = new DoubleCollection();
+                db.Add(10);
+                db.Add(2);
+                line.StrokeDashArray=db;
+            }
+
             line.Stroke = Util.GetColorFromHex("#FF6495ed");
             line.StrokeThickness = LinesStrokeThickness;
             canvas.Children.Add(line);
@@ -365,6 +378,7 @@ namespace OrgChart
         {
             NodeBox nb = new NodeBox(drawingScale);
             nb.Name = ID;
+            nb.ID = ID;
             nb.EmployeeName = name;
             //b.Data = Data;
             nb.Field1 = field1;
@@ -373,7 +387,7 @@ namespace OrgChart
             nb.Field4 = field4;
             nb.Field5 = field5;
 
-            if (!string.IsNullOrEmpty(dotted))
+            if (string.Compare(dotted,"1").Equals(0))
             {
                 DoubleCollection db = new DoubleCollection();
                 db.Add(10);
@@ -454,7 +468,7 @@ namespace OrgChart
                 {
                     MyCanvas.Children.Clear();
                     var results = from n in persons
-                                  where n.ManagerID == persons[i].ID
+                                  where n.Manager == persons[i].Name
                                   select n;
 
                     persons[i].Collapsed = !persons[i].Collapsed;

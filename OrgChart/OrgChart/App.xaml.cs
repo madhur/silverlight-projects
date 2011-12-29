@@ -28,16 +28,20 @@ namespace OrgChart
         private void Application_Startup(object sender, StartupEventArgs e)
         {
              string listGuid = null;
-
+             string currentRoot = null;
             if (e.InitParams != null && e.InitParams.Count > 0)
             {
                 if (e.InitParams.ContainsKey("listGuid") && !string.IsNullOrEmpty(e.InitParams["listGuid"]))
                     listGuid = e.InitParams["listGuid"];
+
+                if (e.InitParams.ContainsKey("CurrentRoot") && !string.IsNullOrEmpty(e.InitParams["CurrentRoot"]))
+                    currentRoot = e.InitParams["CurrentRoot"];
+
             }
 
           
 
-            this.RootVisual = new MainPage(HttpUtility.UrlDecode(listGuid));
+            this.RootVisual = new MainPage(HttpUtility.UrlDecode(listGuid), currentRoot);
         }
 
         private void Application_Exit(object sender, EventArgs e)

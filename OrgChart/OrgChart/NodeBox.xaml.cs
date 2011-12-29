@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.Diagnostics;
 
 namespace OrgChart
 {
@@ -276,6 +277,23 @@ namespace OrgChart
         private void canvMain_MouseLeave(object sender, MouseEventArgs e)
         {
             this.mouseLeave.Begin();
+        }
+
+        private void SetRoot_Click(object sender, RoutedEventArgs e)
+        {
+            Canvas d = this.Parent as Canvas;
+            Debug.WriteLine(this.ID);
+            ScrollViewer doo = d.Parent as ScrollViewer;
+
+            MainPage mainPage = doo.Parent as MainPage;
+
+            List<Person> persons=mainPage.persons;
+            Person employeePerson = persons.First(s => this.ID == s.ID);
+
+
+            mainPage.CurrentRoot = employeePerson;
+            mainPage.Refresh();
+
         }
     }
 }

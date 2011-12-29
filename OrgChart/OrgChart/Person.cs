@@ -15,7 +15,7 @@ namespace OrgChart
     {
         public string ID;
         public string Name;
-        public string ManagerID;
+        public string Manager;
         public string Title;
         public string Department;
         public string Extension;
@@ -35,16 +35,16 @@ namespace OrgChart
         public double MinChildWidth;
         public double X;
         public double StartX;
-        public Boolean Opened = true;        
-        public Boolean Collapsed = false;
+        public Boolean Opened = false;        
+        public Boolean Collapsed = true;
         #endregion
 
-        public static Person GetPerson(string id, string name, string managerID, string title, string department, string extension, string email)
+        public static Person GetPerson(string id, string name, string manager, string title, string department, string extension, string email)
         {
             Person p = new Person();
             p.ID = id;
             p.Name = name;
-            p.ManagerID = managerID;
+            p.Manager = manager;
             p.Title = title;
             p.Department = department;
             p.Extension = extension;
