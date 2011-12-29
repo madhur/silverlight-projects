@@ -89,9 +89,9 @@ namespace OrgChart
       private void XmlDownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
        {
            // e.result contains Xml string
-           m_xdoc = XDocument.Load("madhur.xml");
+       //    m_xdoc = XDocument.Load("madhur.xml");
           // m_xdoc = XDocument.Load("owssvr.xml");
-           //m_xdoc = XDocument.Parse(e.Result);
+           m_xdoc = XDocument.Parse(e.Result);
           Debug.WriteLine(m_xdoc);
           InitializeGrid();
 
